@@ -6,19 +6,23 @@
     "typename": "Door",
     "variables": [
         {
-            "name": "name_",
-            "type": "string"
-        },
-        {
-            "name": "passable_level_",
-            "type": "int32"
-        },
-        {
             "name": "transparent_",
             "type": "bool"
         },
         {
             "name": "passable_right_",
+            "type": "int32"
+        },
+        {
+            "name": "passable_left_",
+            "type": "int32"
+        },
+        {
+            "name": "passable_up_",
+            "type": "int32"
+        },
+        {
+            "name": "passable_level_",
             "type": "int32"
         },
         {
@@ -30,24 +34,28 @@
             "type": "int32"
         },
         {
-            "name": "door_state_",
-            "type": "int32"
-        },
-        {
-            "name": "passable_down_",
-            "type": "int32"
+            "name": "panel_open_",
+            "type": "bool"
         },
         {
             "name": "v_level_",
             "type": "int32"
         },
         {
-            "name": "passable_up_",
+            "name": "name_",
+            "type": "string"
+        },
+        {
+            "name": "passable_down_",
             "type": "int32"
         },
         {
-            "name": "passable_left_",
+            "name": "door_state_",
             "type": "int32"
+        },
+        {
+            "name": "bolts_falled_",
+            "type": "bool"
         }
     ]
 }

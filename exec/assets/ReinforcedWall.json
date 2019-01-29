@@ -6,16 +6,16 @@
     "typename": "ReinforcedWall",
     "variables": [
         {
-            "name": "name_",
-            "type": "string"
+            "name": "transparent_",
+            "type": "bool"
         },
         {
             "name": "passable_level_",
             "type": "int32"
         },
         {
-            "name": "transparent_",
-            "type": "bool"
+            "name": "passable_all_",
+            "type": "int32"
         },
         {
             "name": "passable_right_",
@@ -26,11 +26,11 @@
             "type": "int32"
         },
         {
-            "name": "passable_up_",
-            "type": "int32"
+            "name": "base_state_",
+            "type": "string"
         },
         {
-            "name": "passable_all_",
+            "name": "passable_up_",
             "type": "int32"
         },
         {
@@ -38,19 +38,19 @@
             "type": "int32"
         },
         {
-            "name": "base_state_",
-            "type": "string"
-        },
-        {
             "name": "atmos_state_",
             "type": "int32"
         },
         {
-            "name": "passable_down_",
+            "name": "v_level_",
             "type": "int32"
         },
         {
-            "name": "v_level_",
+            "name": "name_",
+            "type": "string"
+        },
+        {
+            "name": "passable_down_",
             "type": "int32"
         }
     ]

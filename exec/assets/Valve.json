@@ -10,11 +10,19 @@
             "type": "bool"
         },
         {
-            "name": "passable_left_",
+            "name": "name_",
+            "type": "string"
+        },
+        {
+            "name": "passable_all_",
             "type": "int32"
         },
         {
-            "name": "passable_level_",
+            "name": "passable_right_",
+            "type": "int32"
+        },
+        {
+            "name": "passable_left_",
             "type": "int32"
         },
         {
@@ -22,36 +30,24 @@
             "type": "int32"
         },
         {
-            "name": "direction_",
-            "type": "int32"
-        },
-        {
-            "name": "passable_all_",
-            "type": "int32"
-        },
-        {
             "name": "closed_",
             "type": "bool"
         },
         {
-            "name": "v_level_",
+            "name": "direction_",
             "type": "int32"
-        },
-        {
-            "name": "tick_speed_",
-            "type": "int32"
-        },
-        {
-            "name": "name_",
-            "type": "string"
         },
         {
             "name": "main_force_direction_",
             "type": "int32"
         },
         {
-            "name": "passable_right_",
+            "name": "passable_down_",
             "type": "int32"
+        },
+        {
+            "name": "anchored_",
+            "type": "bool"
         },
         {
             "name": "secondary_force_direction_",
@@ -66,11 +62,15 @@
             "type": "int32"
         },
         {
-            "name": "anchored_",
-            "type": "bool"
+            "name": "v_level_",
+            "type": "int32"
         },
         {
-            "name": "passable_down_",
+            "name": "passable_level_",
+            "type": "int32"
+        },
+        {
+            "name": "tick_speed_",
             "type": "int32"
         },
         {

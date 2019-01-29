@@ -6,11 +6,15 @@
     "typename": "WhiteShoes",
     "variables": [
         {
-            "name": "passable_all_",
-            "type": "int32"
+            "name": "transparent_",
+            "type": "bool"
         },
         {
-            "name": "passable_level_",
+            "name": "name_",
+            "type": "string"
+        },
+        {
+            "name": "passable_all_",
             "type": "int32"
         },
         {
@@ -18,43 +22,23 @@
             "type": "int32"
         },
         {
-            "name": "direction_",
-            "type": "int32"
-        },
-        {
-            "name": "tick_speed_",
-            "type": "int32"
+            "name": "type_",
+            "type": "uint32"
         },
         {
             "name": "force_error_per_main_",
             "type": "int32"
         },
         {
-            "name": "damage_",
+            "name": "direction_",
             "type": "int32"
-        },
-        {
-            "name": "name_",
-            "type": "string"
         },
         {
             "name": "main_force_direction_",
             "type": "int32"
         },
         {
-            "name": "force_error_",
-            "type": "int32"
-        },
-        {
-            "name": "secondary_force_direction_",
-            "type": "int32"
-        },
-        {
-            "name": "passable_right_",
-            "type": "int32"
-        },
-        {
-            "name": "v_level_",
+            "name": "passable_down_",
             "type": "int32"
         },
         {
@@ -62,7 +46,23 @@
             "type": "bool"
         },
         {
-            "name": "passable_down_",
+            "name": "secondary_force_direction_",
+            "type": "int32"
+        },
+        {
+            "name": "force_error_",
+            "type": "int32"
+        },
+        {
+            "name": "v_level_",
+            "type": "int32"
+        },
+        {
+            "name": "passable_level_",
+            "type": "int32"
+        },
+        {
+            "name": "tick_speed_",
             "type": "int32"
         },
         {
@@ -70,15 +70,15 @@
             "type": "int32"
         },
         {
-            "name": "transparent_",
-            "type": "bool"
-        },
-        {
-            "name": "type_",
-            "type": "uint32"
-        },
-        {
             "name": "passable_left_",
+            "type": "int32"
+        },
+        {
+            "name": "damage_",
+            "type": "int32"
+        },
+        {
+            "name": "passable_right_",
             "type": "int32"
         }
     ]

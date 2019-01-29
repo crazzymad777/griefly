@@ -1,9 +1,9 @@
 {
-    "asset_name": "BulletCasing",
+    "asset_name": "Multitool",
     "is_turf": false,
-    "sprite": "icons/ammo.dmi",
-    "sprite_state": "s-casing",
-    "typename": "BulletCasing",
+    "sprite": "icons/device.dmi",
+    "sprite_state": "multitool",
+    "typename": "Multitool",
     "variables": [
         {
             "name": "transparent_",

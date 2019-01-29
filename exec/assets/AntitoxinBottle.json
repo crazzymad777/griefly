@@ -6,19 +6,31 @@
     "typename": "AntitoxinBottle",
     "variables": [
         {
-            "name": "passable_all_",
-            "type": "int32"
-        },
-        {
-            "name": "passable_up_",
-            "type": "int32"
-        },
-        {
             "name": "transparent_",
             "type": "bool"
         },
         {
+            "name": "name_",
+            "type": "string"
+        },
+        {
+            "name": "passable_all_",
+            "type": "int32"
+        },
+        {
             "name": "passable_left_",
+            "type": "int32"
+        },
+        {
+            "name": "passable_right_",
+            "type": "int32"
+        },
+        {
+            "name": "damage_",
+            "type": "int32"
+        },
+        {
+            "name": "last_move_",
             "type": "int32"
         },
         {
@@ -26,15 +38,15 @@
             "type": "uint32"
         },
         {
-            "name": "burn_heal_",
-            "type": "int32"
-        },
-        {
             "name": "force_error_per_main_",
             "type": "int32"
         },
         {
-            "name": "damage_",
+            "name": "burn_heal_",
+            "type": "int32"
+        },
+        {
+            "name": "passable_down_",
             "type": "int32"
         },
         {
@@ -46,15 +58,7 @@
             "type": "int32"
         },
         {
-            "name": "toxins_heal_",
-            "type": "int32"
-        },
-        {
-            "name": "last_move_",
-            "type": "int32"
-        },
-        {
-            "name": "direction_",
+            "name": "passable_up_",
             "type": "int32"
         },
         {
@@ -62,19 +66,23 @@
             "type": "int32"
         },
         {
-            "name": "name_",
-            "type": "string"
-        },
-        {
             "name": "main_force_direction_",
             "type": "int32"
         },
         {
-            "name": "passable_right_",
+            "name": "direction_",
             "type": "int32"
         },
         {
+            "name": "anchored_",
+            "type": "bool"
+        },
+        {
             "name": "secondary_force_direction_",
+            "type": "int32"
+        },
+        {
+            "name": "toxins_heal_",
             "type": "int32"
         },
         {
@@ -83,14 +91,6 @@
         },
         {
             "name": "v_level_",
-            "type": "int32"
-        },
-        {
-            "name": "anchored_",
-            "type": "bool"
-        },
-        {
-            "name": "passable_down_",
             "type": "int32"
         }
     ]
