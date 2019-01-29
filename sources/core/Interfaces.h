@@ -1,13 +1,12 @@
 #pragma once
 
-#include <list>
+#include <QString>
 
 #include "KvGlobals.h"
+#include "core_headers/Asset.h"
 #include "core_headers/CoreInterface.h"
 
 #include "Idptr.h"
-
-#include <QString>
 
 class Names;
 namespace kv
@@ -78,6 +77,8 @@ public:
 
     virtual quint32 CreateImpl(const QString& type, quint32 owner = 0) = 0;
     virtual kv::Object* CreateVoid(const QString& hash, quint32 id_new) = 0;
+
+    virtual quint32 CreateAssetImpl(const kv::Asset& asset, quint32 owner = 0) = 0;
 
     virtual void DeleteLater(quint32 id) = 0;
     virtual void ProcessDeletion() = 0;
