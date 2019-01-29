@@ -3,6 +3,7 @@
 #include "SynchronizedRandom.h"
 
 #include "objects/movable/Tables.h"
+#include "objects/Door.h"
 #include "objects/mobs/Human.h"
 
 using namespace kv;
@@ -76,6 +77,30 @@ Wrench::Wrench()
 
     SetName("Wrench");
 }
+
+Multitool::Multitool()
+{
+    SetSprite("icons/device.dmi");
+    SetState("multitool");
+
+    SetDamage(0);
+
+    SetName("Multitool");
+}
+
+bool Multitool::Attack(IdPtr<MapObject> object)
+{
+    if (Item::Attack(object))
+    {
+       if (IdPtr<Door> door = object)
+       {
+           door->ToggleBolts();
+           return false;
+       }
+    }
+    return true;
+}
+
 BulletCasing::BulletCasing()
 {
     SetSprite("icons/ammo.dmi");

@@ -63,6 +63,16 @@ public:
 };
 END_DECLARE(Wrench);
 
+class Multitool : public Item
+{
+public:
+    DECLARE_SAVEABLE(Multitool, Item);
+    REGISTER_CLASS_AS(Multitool);
+    Multitool();
+    virtual bool Attack(IdPtr<MapObject> object) override;
+};
+END_DECLARE(Multitool);
+
 class BulletCasing : public Item
 {
 public:

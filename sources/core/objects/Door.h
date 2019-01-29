@@ -12,7 +12,7 @@ public:
     DECLARE_SAVEABLE(Door, MaterialObject);
     REGISTER_CLASS_AS(Door);
     Door();
-    
+
     enum class State : qint32
     {
         OPEN,
@@ -27,11 +27,17 @@ public:
     virtual void Process() override;
     virtual void Bump(const Vector& vector, IdPtr<Movable> item) override;
     virtual void AttackBy(IdPtr<Item> item) override;
+    virtual void ToggleDoorPanel();
+    virtual void ToggleBolts();
+    virtual void UpdateDoorOverlays();
     bool IsState(State state) const { return state == door_state_; }
     void Weld();
+    virtual void AfterWorldCreation() override;
 private:
     State KV_SAVEABLE(door_state_);
     qint32 KV_SAVEABLE(last_tick_);
+    bool KV_SAVEABLE(panel_open_);
+    bool KV_SAVEABLE(bolts_falled_);
 };
 END_DECLARE(Door);
 
