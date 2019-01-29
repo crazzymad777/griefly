@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(KVEngineQt)
+project(Griefly)
 
 option(BUILD_TESTS "Build tests" OFF)
 option(BUILD_COVER "Generate test coverage" OFF)
@@ -33,6 +33,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+if (MSVC)
+    add_definitions(/WX)
+endif()
+
 # Main game project
 add_subdirectory(sources)
 
@@ -44,6 +48,7 @@ set(SOURCES_PATH "../../sources/")
 add_subdirectory(utils/qzip_unpacker)
 
 add_subdirectory(utils/basic_assets_generator)
+add_subdirectory(utils/map_editor)
 
 # Building server
 set(GOPATH ${CMAKE_CURRENT_SOURCE_DIR}/gopath)

@@ -12,6 +12,40 @@
 #include <Mapgen.h>
 #include <Dir.h>
 
+#include "representation/SpriteHolder.h"
+
+const QVector<QPixmap>& SpriteCache::GetSprite(const QString& sprite, const QString& state)
+{
+    auto it = sprites_.find({sprite, state});
+    if (it != sprites_.end())
+    {
+        return it->second;
+    }
+
+    GLSprite* gl_sprite = GetSpriter().GetSprite(sprite);
+    const auto& sprite_metadata = gl_sprite->GetMetadata();
+    if (!sprite_metadata.IsValidState(state))
+    {
+        return sprites_.insert({{sprite, state}, QVector<QPixmap>()}).first->second;
+    }
+    const auto& state_metadata = sprite_metadata.GetSpriteMetadata(state);
+
+    QVector<QPixmap> pixmaps;
+    for (qint32 dir = 0; dir < state_metadata.dirs; ++dir)
+    {
+        const int current_frame_pos = state_metadata.first_frame_pos + dir;
+
+        const int image_state_h = current_frame_pos / gl_sprite->FrameW();
+        const int image_state_w = current_frame_pos % gl_sprite->FrameW();
+
+        QImage image = gl_sprite->GetFrames()
+            [image_state_w * gl_sprite->FrameH() + image_state_h];
+
+        pixmaps.push_back(QPixmap::fromImage(image));
+    }
+    return sprites_.insert({{sprite, state}, pixmaps}).first->second;
+}
+
 MapEditor::EditorEntry::EditorEntry()
 {
     pixmap_item = nullptr;
@@ -113,9 +147,16 @@ void MapEditor::PasteItemsToCurrentTile()
 {
     for (auto it = copypaste_items_.begin(); it != copypaste_items_.end(); ++it)
     {
-        auto& new_item = AddItem(it->item_type, pointer_.first_posx, pointer_.first_posy, 0);
+        auto& new_item = AddItem(
+            it->item_type,
+            it->sprite_name,
+            it->state,
+            {},
+            pointer_.first_posx,
+            pointer_.first_posy,
+            0);
         new_item.variables = it->variables;
-        UpdateDirs(&new_item);
+        UpdateSprite(&new_item);
     }
 
     emit newSelectionSetted(
@@ -153,23 +194,29 @@ void MapEditor::PasteFromAreaBuffer()
         for (int y = 0; y < end_y - pointer_.first_posy; ++y)
         {
             auto& new_item = SetTurf(
-                                area_buffer_[x][y].turf.item_type,
-                                pointer_.first_posx + x,
-                                pointer_.first_posy + y,
-                                0);
+                area_buffer_[x][y].turf.item_type,
+                area_buffer_[x][y].turf.sprite_name,
+                area_buffer_[x][y].turf.state,
+                {},
+                pointer_.first_posx + x,
+                pointer_.first_posy + y,
+                0);
             new_item.variables = area_buffer_[x][y].turf.variables;
-            UpdateDirs(&new_item);
+            UpdateSprite(&new_item);
             for (auto it = area_buffer_[x][y].items.begin();
                       it != area_buffer_[x][y].items.end();
                     ++it)
             {
                 auto& new_item = AddItem(
-                                    it->item_type,
-                                    pointer_.first_posx + x,
-                                    pointer_.first_posy + y,
-                                    0);
+                    it->item_type,
+                    it->sprite_name,
+                    it->state,
+                    {},
+                    pointer_.first_posx + x,
+                    pointer_.first_posy + y,
+                    0);
                 new_item.variables = it->variables;
-                UpdateDirs(&new_item);
+                UpdateSprite(&new_item);
             }
         }
     }
@@ -188,6 +235,8 @@ QJsonObject MapEditor::EntryToJson(const MapEditor::EditorEntry& entry) const
 
     QJsonObject object_info;
     object_info.insert(key::TYPE, entry.item_type);
+    object_info.insert(key::SPRITE, entry.sprite_name);
+    object_info.insert(key::STATE, entry.state);
     QJsonObject variables;
     for (auto var = entry.variables.begin(); var != entry.variables.end(); ++var)
     {
@@ -297,14 +346,29 @@ void MapEditor::CreateEntity(int x, int y, int z, const QJsonObject& info, bool 
 
     const QString item_type = info.value(key::TYPE).toString();
 
-    MapEditor::EditorEntry* entry;
-    if (is_turf)
+    QString sprite;
+    QString state;
+
+    if (info.contains(key::SPRITE))
     {
-        entry = &SetTurf(item_type, x, y, z);
+        sprite = info.value(key::SPRITE).toString();
+        state = info.value(key::STATE).toString();
     }
     else
     {
-        entry = &AddItem(item_type, x, y, z);
+        auto sprite_state = sprite_state_names_holder_[item_type];
+        sprite = sprite_state.first;
+        state = sprite_state.second;
+    }
+
+    MapEditor::EditorEntry* entry;
+    if (is_turf)
+    {
+        entry = &SetTurf(item_type, sprite, state, {}, x, y, z);
+    }
+    else
+    {
+        entry = &AddItem(item_type, sprite, state, {}, x, y, z);
     }
 
     const QJsonObject variables = info.value(key::VARIABLES).toObject();
@@ -313,7 +377,7 @@ void MapEditor::CreateEntity(int x, int y, int z, const QJsonObject& info, bool 
     {
         entry->variables.insert(key, variables.value(key));
     }
-    UpdateDirs(entry);
+    UpdateSprite(entry);
 }
 
 void MapEditor::fix_borders(int *posx, int *posy)
@@ -366,13 +430,16 @@ void MapEditor::Resize(int posx, int posy, int posz)
     border_image_->setPolygon(p2);
 
     emit newSelectionSetted(
-                first_selection_x_, first_selection_y_,
-                second_selection_x_, second_selection_y_);
+        first_selection_x_,
+        first_selection_y_,
+        second_selection_x_,
+        second_selection_y_);
 }
 
-void MapEditor::AddItemType(const QString& item_type, const QVector<QPixmap>& images)
+void MapEditor::AddItemType(
+    const QString& item_type, const QString& sprite, const QString& state)
 {
-    images_holder_[item_type] = images;
+    sprite_state_names_holder_[item_type] = {sprite, state};
 }
 
 void MapEditor::AddTurfType(const QString& item_type)
@@ -380,13 +447,17 @@ void MapEditor::AddTurfType(const QString& item_type)
     turf_types_.insert(item_type);
 }
 
-void MapEditor::AddItem(const QString &item_type)
+void MapEditor::AddItem(
+    const QString &item_type,
+    const QString& sprite,
+    const QString& state,
+    const QVector<std::pair<QString, QJsonValue>>& variables)
 {
     for (int x = pointer_.first_posx; x <= pointer_.second_posx; ++x)
     {
         for (int y = pointer_.first_posy; y <= pointer_.second_posy; ++y)
         {
-            AddItem(item_type, x, y, 0);
+            AddItem(item_type, sprite, state, variables, x, y, 0);
         }
     }
 
@@ -395,22 +466,21 @@ void MapEditor::AddItem(const QString &item_type)
                 second_selection_x_, second_selection_y_);
 }
 
-void MapEditor::UpdateDirs(MapEditor::EditorEntry* ee)
+void MapEditor::UpdateSprite(MapEditor::EditorEntry* ee)
 {
     if (!ee)
     {
         return;
     }
     const QJsonValue data = ee->variables["direction_"].toObject()[mapgen::key::type::INT32];
-    if (!data.isNull())
-    {
-        Dir dir = static_cast<Dir>(data.toInt());
-        int byond_dir = kv::helpers::DirToByond(dir);
+    const Dir dir = static_cast<Dir>(data.toInt(static_cast<int>(Dir::SOUTH)));
+    const int byond_dir = kv::helpers::DirToByond(dir);
 
-        if (byond_dir < images_holder_[ee->item_type].size())
-        {
-            ee->pixmap_item->setPixmap(images_holder_[ee->item_type][byond_dir]);
-        }
+    const QVector<QPixmap>& sprites = sprite_cache_.GetSprite(ee->sprite_name, ee->state);
+    if (byond_dir < sprites.size())
+    {
+        qDebug() << ee->sprite_name << ee->state;
+        ee->pixmap_item->setPixmap(sprites[byond_dir]);
     }
 }
 
@@ -440,19 +510,38 @@ void MapEditor::RemoveItems(int posx, int posy, int posz)
     items.clear();
 }
 
-MapEditor::EditorEntry& MapEditor::AddItem(const QString &item_type, int posx, int posy, int posz)
+MapEditor::EditorEntry& MapEditor::AddItem(
+    const QString &item_type,
+    const QString& sprite,
+    const QString& state,
+    const QVector<std::pair<QString, QJsonValue>>& variables,
+    int posx,
+    int posy,
+    int posz)
 {
     EditorEntry new_entry;
     new_entry.item_type = item_type;
-    new_entry.pixmap_item = scene_->addPixmap(images_holder_[item_type][0]);
+    const QVector<QPixmap>& sprites = sprite_cache_.GetSprite(sprite, state);
+    new_entry.pixmap_item = scene_->addPixmap(sprites[0]);
     new_entry.pixmap_item->setPos(posx * 32, posy * 32);
     new_entry.pixmap_item->setZValue(50);
+    new_entry.sprite_name = sprite;
+    new_entry.state = state;
+
+    for (const auto& variable : variables)
+    {
+        new_entry.variables[variable.first] = variable.second;
+    }
 
     editor_map_[posx][posy][posz].items.push_back(new_entry);
     return editor_map_[posx][posy][posz].items.back();
 }
 
-void MapEditor::SetTurf(const QString &item_type)
+void MapEditor::SetTurf(
+    const QString& item_type,
+    const QString& sprite,
+    const QString& state,
+    const QVector<std::pair<QString, QJsonValue>>& variables)
 {
     // For performance everything should be removed firstly
     for (int x = pointer_.first_posx; x <= pointer_.second_posx; ++x)
@@ -469,7 +558,7 @@ void MapEditor::SetTurf(const QString &item_type)
     {
         for (int y = pointer_.first_posy; y <= pointer_.second_posy; ++y)
         {
-            SetTurf(item_type, x, y, 0);
+            SetTurf(item_type, sprite, state, variables, x, y, 0);
         }
     }
 
@@ -478,7 +567,14 @@ void MapEditor::SetTurf(const QString &item_type)
                 second_selection_x_, second_selection_y_);
 }
 
-MapEditor::EditorEntry& MapEditor::SetTurf(const QString &item_type, int posx, int posy, int posz)
+MapEditor::EditorEntry& MapEditor::SetTurf(
+    const QString& item_type,
+    const QString& sprite,
+    const QString& state,
+    const QVector<std::pair<QString, QJsonValue>>& variables,
+    int posx,
+    int posy,
+    int posz)
 {
     if (editor_map_[posx][posy][posz].turf.pixmap_item != nullptr)
     {
@@ -488,8 +584,17 @@ MapEditor::EditorEntry& MapEditor::SetTurf(const QString &item_type, int posx, i
 
     EditorEntry new_entry;
     new_entry.item_type = item_type;
-    new_entry.pixmap_item = scene_->addPixmap(images_holder_[item_type][0]);
+    const QVector<QPixmap>& sprites = sprite_cache_.GetSprite(sprite, state);
+    new_entry.pixmap_item = scene_->addPixmap(sprites[0]);
     new_entry.pixmap_item->setPos(posx * 32, posy * 32);
+    new_entry.sprite_name = sprite;
+    new_entry.state = state;
+
+    for (const auto& variable : variables)
+    {
+        new_entry.variables[variable.first] = variable.second;
+    }
+
     editor_map_[posx][posy][posz].turf = new_entry;
     return editor_map_[posx][posy][posz].turf;
 }
@@ -580,4 +685,3 @@ MapEditor::EditorEntry& MapEditor::GetTurfFor(int posx, int posy, int posz)
 {
     return editor_map_[posx][posy][posz].turf;
 }
-

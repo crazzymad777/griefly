@@ -27,6 +27,7 @@ public:
     Human();
 
     virtual void AfterWorldCreation() override;
+    virtual void Delete() override;
 
     virtual void MindExit() override;
     virtual void MindEnter() override;
@@ -50,11 +51,14 @@ public:
 
     virtual void Bump(const Vector& force, IdPtr<Movable> item) override;
 
+    virtual bool RemoveObject(IdPtr<MapObject> object) override;
+
     virtual void AttackBy(IdPtr<Item> item) override;
 
     virtual void Represent(GrowingFrame* frame, IdPtr<Mob> mob) const override;
 
     virtual bool TryMove(Dir direct) override;
+    virtual bool Rotate(Dir direct) override;
 
     IdPtr<HumanInterface> GetHumanInterface() { return interface_; }
 
@@ -62,21 +66,25 @@ public:
 
     void UpdateOverlays();
 
-    int GetHealth() { return CalculateHealth(); }
+    int GetHealth() const { return CalculateHealth(); }
 
     void RotationAction(IdPtr<MapObject> item);
     void PullAction(IdPtr<MapObject> item);
     void StopPull();
     
-    int GetBurnDamage() { return burn_damage_; }
-    int GetSuffocationDamage() { return suffocation_damage_; }
-    int GetBruteDamage() { return brute_damage_; }
-    int GetToxinsDamage() { return toxins_damage_; }
-    bool IsDead() { return dead_; }
+    void InterfaceChanges(IdPtr<Item> item);
+
+    int GetBurnDamage() const { return burn_damage_; }
+    int GetSuffocationDamage() const { return suffocation_damage_; }
+    int GetBruteDamage() const { return brute_damage_; }
+    int GetToxinsDamage() const { return toxins_damage_; }
+    bool IsDead() const { return dead_; }
     void ApplyBurnDamage(int damage);
     void ApplySuffocationDamage(int damage);
     void ApplyBruteDamage(int damage);
     void ApplyToxinsDamage(int damage);
+
+    IdPtr<Hand> GetHand() const { return hand_; }
 protected:
     int KV_SAVEABLE(attack_cooldown_);
 

@@ -8,6 +8,7 @@
 #include "Map.h"
 #include "SynchronizedRandom.h"
 #include "AutogenMetadata.h"
+#include "WorldLoaderSaver.h"
 
 #include "objects/GlobalObjectsHolder.h"
 
@@ -64,7 +65,7 @@ kv::Object* ObjectFactory::NewVoidObjectSaved(const QString& type)
 
 void ObjectFactory::Clear()
 {
-    quint32 table_size = objects_table_.size();
+    const quint32 table_size = static_cast<quint32>(objects_table_.size());
     for (quint32 i = 1; i < table_size; ++i)
     {
         if (objects_table_[i].object != nullptr)
@@ -90,7 +91,7 @@ void ObjectFactory::BeginWorldCreation()
 void ObjectFactory::FinishWorldCreation()
 {
     MarkWorldAsCreated();
-    quint32 table_size = objects_table_.size();
+    const quint32 table_size = static_cast<quint32>(objects_table_.size());
     for (quint32 i = 1; i < table_size; ++i)
     {
         if (objects_table_[i].object != nullptr)
@@ -165,6 +166,24 @@ kv::Object* ObjectFactory::CreateVoid(const QString &hash, quint32 id_new)
     return item;
 }
 
+quint32 ObjectFactory::CreateAssetImpl(const kv::Asset& asset, quint32 owner_id)
+{
+    auto object = kv::world::LoadObject(game_, asset.ToJsonForObjectCreation());
+    IdPtr<kv::MapObject> owner = owner_id;
+    if (owner.IsValid())
+    {
+        if (CastTo<kv::Turf>(object.operator->()) != nullptr)
+        {
+            owner->SetTurf(object->GetId());
+        }
+        else if (!owner->AddObject(object->GetId()))
+        {
+            kv::Abort("AddItem failed");
+        }
+    }
+    return object->GetId();
+}
+
 void ObjectFactory::DeleteLater(quint32 id)
 {
     ids_to_delete_.push_back(objects_table_[id].object);
@@ -183,8 +202,8 @@ void ObjectFactory::ProcessDeletion()
 quint32 ObjectFactory::Hash() const
 {
     unsigned int h = 0;
-    int table_size = objects_table_.size();
-    for (int i = 1; i < table_size; ++i)
+    const quint32 table_size = static_cast<quint32>(objects_table_.size());
+    for (quint32 i = 1; i < table_size; ++i)
     {
         if (objects_table_[i].object != nullptr)
         {

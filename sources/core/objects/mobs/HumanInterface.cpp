@@ -16,20 +16,19 @@ namespace
     const QString TEMPERATURE = "temperature";
 
     // Slots & buttons & indicators sprites
-    const QString DEFAULT_INTERFACE_SPRITE = "icons/screen_retro.dmi";
-    const QString OLD_INTERFACE_SPRITE = "icons/screen1_old.dmi";
+    const QString DEFAULT_INTERFACE_SPRITE = "icons/screen1.dmi";
 
     namespace states
     {
         // Hands states
-        const QString RIGHT_HAND_INACTIVE = "hand_r_inactive";
-        const QString RIGHT_HAND_ACTIVE = "hand_r_active";
-        const QString LEFT_HAND_INACTIVE = "hand_l_inactive";
-        const QString LEFT_HAND_ACTIVE = "hand_l_active";
+        const QString RIGHT_HAND_INACTIVE = "hand_right";
+        const QString RIGHT_HAND_ACTIVE = "hand_right";
+        const QString LEFT_HAND_INACTIVE = "hand_left";
+        const QString LEFT_HAND_ACTIVE = "hand_left";
 
         // Swap indicator states
-        const QString RIGHT_HAND = "hand_right";
-        const QString LEFT_HAND = "hand_left";
+        const QString RIGHT_HAND = "rhand";
+        const QString LEFT_HAND = "lhand";
 
         // Pull indicator states
         const QString NOT_PULL = "pull0";
@@ -89,10 +88,21 @@ kv::HumanInterface::HumanInterface()
     }
 
     {
+        Slot mask;
+        mask.position = {0, 13};
+        mask.view.SetSprite(DEFAULT_INTERFACE_SPRITE);
+        mask.view.SetState("mask");
+        mask.overlay_sprite = "icons/mask.dmi";
+        mask.name = slot::MASK;
+        mask.type = SlotType::MASK;
+        slots_.append(mask);
+    }
+
+    {
         Slot uniform;
         uniform.position = {1, 15};
         uniform.view.SetSprite(DEFAULT_INTERFACE_SPRITE);
-        uniform.view.SetState("uniform");
+        uniform.view.SetState("center");
         uniform.overlay_sprite = "icons/uniform.dmi";
         uniform.overlay_state_postfix = "_s";
         uniform.type = SlotType::UNIFORM;
@@ -123,9 +133,20 @@ kv::HumanInterface::HumanInterface()
     }
 
     {
+        Slot back;
+        back.position = {2, 13};
+        back.view.SetSprite(DEFAULT_INTERFACE_SPRITE);
+        back.view.SetState("back");
+        back.overlay_sprite = "icons/back.dmi";
+        back.type = SlotType::BACK;
+        back.name = slot::BACK;
+        slots_.append(back);
+    }
+
+    {
         Button drop;
         drop.position = {7, 15};
-        drop.view.SetSprite(OLD_INTERFACE_SPRITE);
+        drop.view.SetSprite(DEFAULT_INTERFACE_SPRITE);
         drop.view.SetState("act_drop");
         drop.name = DROP;
         buttons_.append(drop);
@@ -134,7 +155,7 @@ kv::HumanInterface::HumanInterface()
     {
         Button pull;
         pull.position = {8, 15};
-        pull.view.SetSprite(OLD_INTERFACE_SPRITE);
+        pull.view.SetSprite(DEFAULT_INTERFACE_SPRITE);
         pull.view.SetState(states::NOT_PULL);
         pull.name = STOP_PULL;
         buttons_.append(pull);
@@ -143,7 +164,7 @@ kv::HumanInterface::HumanInterface()
     {
         Button swap;
         swap.position = {6, 15};
-        swap.view.SetSprite(OLD_INTERFACE_SPRITE);
+        swap.view.SetSprite(DEFAULT_INTERFACE_SPRITE);
         swap.view.SetState(states::RIGHT_HAND);
         swap.name = SWAP;
         buttons_.append(swap);
@@ -152,7 +173,7 @@ kv::HumanInterface::HumanInterface()
     {
         Button lay;
         lay.position = {15, 11};
-        lay.view.SetSprite(OLD_INTERFACE_SPRITE);
+        lay.view.SetSprite(DEFAULT_INTERFACE_SPRITE);
         lay.view.SetState(states::NOT_LAY);
         lay.name = LAY;
         buttons_.append(lay);
@@ -161,7 +182,7 @@ kv::HumanInterface::HumanInterface()
     {
         Button health;
         health.position = {15, 10};
-        health.view.SetSprite(OLD_INTERFACE_SPRITE);
+        health.view.SetSprite(DEFAULT_INTERFACE_SPRITE);
         health.view.SetState("health0");
         health.name = HEALTH;
         buttons_.append(health);
@@ -170,7 +191,7 @@ kv::HumanInterface::HumanInterface()
     {
         Button oxygen;
         oxygen.position = {15, 12};
-        oxygen.view.SetSprite(OLD_INTERFACE_SPRITE);
+        oxygen.view.SetSprite(DEFAULT_INTERFACE_SPRITE);
         oxygen.view.SetState(states::OXYGEN);
         oxygen.name = OXYGEN;
         buttons_.append(oxygen);
@@ -179,7 +200,7 @@ kv::HumanInterface::HumanInterface()
     {
         Button toxins;
         toxins.position = {15, 13};
-        toxins.view.SetSprite(OLD_INTERFACE_SPRITE);
+        toxins.view.SetSprite(DEFAULT_INTERFACE_SPRITE);
         toxins.view.SetState(states::TOXINS);
         toxins.name = TOXINS;
         buttons_.append(toxins);
@@ -188,7 +209,7 @@ kv::HumanInterface::HumanInterface()
     {
         Button temperature;
         temperature.position = {15, 9};
-        temperature.view.SetSprite(OLD_INTERFACE_SPRITE);
+        temperature.view.SetSprite(DEFAULT_INTERFACE_SPRITE);
         temperature.view.SetState(states::TEMPERATURE_TEMPLATE.arg(0));
         temperature.name = TEMPERATURE;
         buttons_.append(temperature);
@@ -290,7 +311,9 @@ void kv::HumanInterface::RemoveItem(const QString& slot_name)
 
 void kv::HumanInterface::RemoveItem(Slot* slot)
 {
+    IdPtr<Item> item = slot->item;
     slot->item = 0;
+    human_owner_->InterfaceChanges(item);
 }
 
 bool kv::HumanInterface::InsertItem(const QString& slot_name, IdPtr<Item> item)
@@ -321,6 +344,7 @@ bool kv::HumanInterface::InsertItem(Slot* slot, IdPtr<Item> item)
     }
     slot->item = item;
     item->SetOwner(human_owner_);
+    human_owner_->UpdateOverlays();
     return true;
 }
 
@@ -355,27 +379,68 @@ void kv::HumanInterface::Represent(GrowingFrame* frame)
     }
 }
 
-void kv::HumanInterface::RemoveItem(IdPtr<Item> item)
+bool kv::HumanInterface::RemoveItem(IdPtr<Item> item)
 {
     for (Slot& slot : slots_)
     {
         if (slot.item == item)
         {
             slot.item = 0;
-            return;
+            return true;
         }
     }
+    return false;
 }
 
-void kv::HumanInterface::AddOverlays(ViewInfo* view_info)
+void kv::HumanInterface::AddOverlays(Dir dir, ViewInfo* view_info)
 {
-    for (const Slot& slot : slots_)
+    auto add_lay = [view_info, this](auto adder, const QString& slot_name)
     {
-        if (slot.item.IsValid())
+        const auto& slot = GetSlot(slot_name);
+        if (!slot.item.IsValid())
         {
-            const QString state_name = slot.item->GetView().GetBaseFrameset().GetState();
-            view_info->AddOverlay(slot.overlay_sprite, state_name + slot.overlay_state_postfix);
+            return;
         }
+        const QString state_name = slot.item->GetView().GetBaseFrameset().GetState();
+        (view_info->*adder)(slot.overlay_sprite, state_name + slot.overlay_state_postfix);
+    };
+    auto add_overlay = [&add_lay](const QString& slot_name)
+    {
+        add_lay(&ViewInfo::AddOverlay, slot_name);
+    };
+    auto add_underlay = [&add_lay](const QString& slot_name)
+    {
+        add_lay(&ViewInfo::AddUnderlay, slot_name);
+    };
+
+    if (dir == Dir::WEST)
+    {
+        add_underlay(slot::RIGHT_HAND);
+    }
+    else if (dir == Dir::EAST)
+    {
+        add_underlay(slot::LEFT_HAND);
+    }
+
+    add_overlay(slot::UNIFORM);
+    add_overlay(slot::FEET);
+    add_overlay(slot::MASK);
+    add_overlay(slot::HEAD);
+    add_overlay(slot::SUIT);
+    add_overlay(slot::BACK);
+
+    if (dir == Dir::WEST)
+    {
+        add_overlay(slot::LEFT_HAND);
+    }
+    else if (dir == Dir::EAST)
+    {
+        add_overlay(slot::RIGHT_HAND);
+    }
+    else
+    {
+        add_overlay(slot::LEFT_HAND);
+        add_overlay(slot::RIGHT_HAND);
     }
 }
 
@@ -486,7 +551,14 @@ void kv::HumanInterface::ApplyActiveHandOnSlot(Slot* slot)
     }
     else if (slot->item.IsValid())
     {
-        PerformAttack(slot->item, active_hand.item);
+        if (!active_hand.item.IsValid())
+        {
+            PerformAttack(slot->item, human_owner_->GetHand());
+        }
+        else
+        {
+            PerformAttack(slot->item, active_hand.item);
+        }
     }
 }
 

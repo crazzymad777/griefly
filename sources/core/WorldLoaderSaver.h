@@ -7,6 +7,8 @@
 
 namespace kv
 {
+class MaterialObject;
+
 namespace world
 {
 
@@ -15,6 +17,9 @@ void Load(GameInterface* game, kv::FastDeserializer& deserializer);
 void LoadFromJsonMapGen(GameInterface* game, const QJsonObject& data);
 void SaveMapHeader(const GameInterface* game, kv::FastSerializer& serializer);
 void LoadMapHeader(GameInterface* game, kv::FastDeserializer& deserializer);
+
+QByteArray ConvertJsonToSerialized(const QJsonValue& data);
+IdPtr<kv::MaterialObject> LoadObject(GameInterface* game, const QJsonObject& data);
 
 }
 }

@@ -23,6 +23,9 @@ const QString HEAD = "head";
 const QString SUIT = "suit";
 const QString UNIFORM = "uniform";
 const QString FEET = "feet";
+const QString MASK = "mask";
+const QString BACK = "back";
+
 
 }
 
@@ -52,9 +55,9 @@ public:
 
     void Represent(GrowingFrame* frame);
 
-    void RemoveItem(IdPtr<Item> item);
+    bool RemoveItem(IdPtr<Item> item);
 
-    void AddOverlays(ViewInfo* view_info);
+    void AddOverlays(Dir dir, ViewInfo* view_info);
 
     void UpdatePulling(bool is_pulling);
     void UpdateLaying(bool is_laying);
@@ -62,7 +65,7 @@ public:
     void UpdateEnvironment(int temperature, int pressure, int oxygen, int plasma);
 private:
     bool InsertItem(Slot* slot, IdPtr<Item> item);
-    static void RemoveItem(Slot* slot);
+    void RemoveItem(Slot* slot);
 
     Slot& GetSlot(const QString& slot_name);
     Slot& GetActiveHand();

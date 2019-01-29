@@ -20,6 +20,8 @@
 #include "objects/movable/items/Drinks.h"
 #include "objects/movable/items/MedbayTools.h"
 #include "objects/PhysicsEngine.h"
+#include "objects/movable/items/HandGasTank.h"
+#include "objects/movable/items/Masks.h"
 
 #include "ChatFrameInfo.h"
 
@@ -85,6 +87,14 @@ void Human::AfterWorldCreation()
     SetName(GetGame().GetNames().GetMaleName());
 }
 
+void Human::Delete()
+{
+    hand_->Delete();
+    interface_->Delete();
+
+    Mob::Delete();
+}
+
 void Human::MindEnter()
 {
     // Nothing
@@ -132,6 +142,16 @@ bool Human::TryMove(Dir direct)
                 StopPull();
             }
         }
+        return true;
+    }
+    return false;
+}
+
+bool Human::Rotate(Dir direct)
+{
+    if (Mob::Rotate(direct))
+    {
+        UpdateOverlays();
         return true;
     }
     return false;
@@ -328,7 +348,8 @@ void Human::ProcessMessage(const Message& message)
 void Human::UpdateOverlays()
 {
     GetView().RemoveOverlays();
-    interface_->AddOverlays(&GetView());
+    GetView().RemoveUnderlays();
+    interface_->AddOverlays(GetDir(), &GetView());
 }
 
 void Human::Process()
@@ -400,8 +421,18 @@ void Human::Live()
     {
         return;
     }
-
-    if (atmos::AtmosHolder* holder = GetOwner()->GetAtmosHolder())
+    atmos::AtmosHolder* holder = [&]()
+    {
+        if (IdPtr<GasMask> mask = GetHumanInterface()->GetItem(slot::MASK))
+        {
+            if (IdPtr<HandGasTank> tank = mask->GetGasTank())
+            {
+                return tank->GetAtmosHolder();
+            }
+        }
+        return GetOwner()->GetAtmosHolder();
+    }();
+    if (holder)
     {
         const int oxygen = holder->GetGase(atmos::OXYGEN);
         const int plasma = holder->GetGase(atmos::PLASMA);
@@ -456,10 +487,7 @@ void Human::Live()
 
     interface_->UpdateHealth(CalculateHealth());
 
-    if (lay_timer_ > 0)
-    {
-        --lay_timer_;
-    }
+    lay_timer_ = std::max(0, lay_timer_ - 1);
 
     if (CalculateHealth() < 0)
     {
@@ -531,7 +559,7 @@ void Human::AttackBy(IdPtr<Item> item)
     {
         ApplyBruteDamage(hand->GetDamage() * 100);
 
-        unsigned int punch_value = (GenerateRandom() % 4) + 1;
+        const unsigned int punch_value = (GenerateRandom() % 4) + 1;
         PlaySoundIfVisible(QString("punch%1.wav").arg(punch_value));
 
         if (GenerateRandom() % 5 == 0)
@@ -546,7 +574,7 @@ void Human::AttackBy(IdPtr<Item> item)
     if (item.IsValid() && (item->GetDamage() > 0))
     {
         ApplyBruteDamage(item->GetDamage() * 100);
-        QString sound = QString("genhit%1.wav").arg(GenerateRandom() % 3 + 1);
+        const QString sound = QString("genhit%1.wav").arg(GenerateRandom() % 3 + 1);
         PlaySoundIfVisible(sound);
         if (IdPtr<MaterialObject> item_owner = item->GetOwner())
         {
@@ -567,27 +595,28 @@ void Human::Represent(GrowingFrame* frame, IdPtr<kv::Mob> mob) const
     ent.pos_y = GetPosition().y;
     ent.vlevel = GetVisibleLevel();
     ent.view = GetView().GetRawData();
-    if (!lying_)
+    ent.dir = [&]()
     {
-        ent.dir = GetDir();
-    }
-    else
-    {
-        ent.dir = Dir::SOUTH;
-    }
+        if (lying_)
+        {
+            return Dir::SOUTH;
+        }
+        return GetDir();
+    }();
     frame->Append(ent);
 }
 
 void Human::CalculateVisible(QVector<Position>* visible_list) const
 {
-    if (CalculateHealth() >= 0)
+    if (CalculateHealth() < 0)
     {
-        GetGame().GetMap().CalculateLos(
-            visible_list,
-            GetPosition().x,
-            GetPosition().y,
-            GetPosition().z);
+        return;
     }
+    GetGame().GetMap().CalculateLos(
+        visible_list,
+        GetPosition().x,
+        GetPosition().y,
+        GetPosition().z);
 }
 
 void Human::Bump(const Vector& force, IdPtr<Movable> item)
@@ -603,6 +632,16 @@ void Human::Bump(const Vector& force, IdPtr<Movable> item)
         return;
     }
     Movable::Bump(force, item);
+}
+
+bool Human::RemoveObject(IdPtr<MapObject> object)
+{
+    if (interface_->RemoveItem(object))
+    {
+        UpdateOverlays();
+        return true;
+    }
+    return false;
 }
 
 void Human::RotationAction(IdPtr<MapObject> item)
@@ -640,6 +679,36 @@ void Human::StopPull()
 {
     pulled_object_ = 0;
     interface_->UpdatePulling(false);
+}
+
+void Human::InterfaceChanges(IdPtr<Item> item)
+{
+    if (![&]()
+    {
+        if (IdPtr<GasMask> mask = item)
+        {
+            if (IdPtr<HandGasTank> gas_tank = mask->GetGasTank())
+            {
+                gas_tank->SetGasMask(0);
+                mask->SetGasTank(0);
+                return true;
+            }
+        }
+        else if (IdPtr<HandGasTank> gas_tank = item)
+        {
+            if (IdPtr<GasMask> mask = gas_tank->GetGasMask())
+            {
+                gas_tank->SetGasMask(0);
+                mask->SetGasTank(0);
+                return true;
+            }
+        }
+        return false;
+    }())
+    {
+        return;
+    }
+    PostHtmlFor("Gas tank has been disconnected from the mask!", GetId());
 }
 
 void Human::TryClownBootsHonk()
