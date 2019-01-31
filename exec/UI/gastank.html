@@ -10,40 +10,60 @@
 </head>
 <body>
 <p id="togglevalve">Valve Status:
-<button class="w3-button w3-padding-small w3-red" v-on:click="onToggleValve" v-if="status">Closed</button>
-<button class="w3-button w3-padding-small w3-green" v-on:click="onToggleValve" v-else>Opened</button>
+<button class="w3-button w3-padding-small w3-red" v-on:click="onToggleValve"   v-if="status == GASTANK_STATE_CLOSED">Closed</button>
+<button class="w3-button w3-padding-small w3-green" v-on:click="onToggleValve" v-else-if="status == GASTANK_STATE_OPEN">Opened</button>
+<button class="w3-button w3-padding-small w3-gray" v-on:click="onToggleValve"  v-else>Broken</button>
 </p>
 <p id="temperature">Temperature: {{ status }}</p>
 <p id="pressure">Pressure: {{ status }}</p>
 <script>
+const GASTANK_STATE_OPEN = 0;
+const GASTANK_STATE_CLOSED = 1;
+const GASTANK_STATE_BROKEN = 2;
+
 document.addEventListener("DOMContentLoaded", function () {
     if(typeof qt === 'undefined')
     {
         alert("Only for clients run inside Qt WebEngine");
         console.error("Only for clients run inside Qt WebEngine");
+        return;
     }
 
     new QWebChannel(qt.webChannelTransport, function(channel){
         window.cppSide = channel.objects.GasTankUI;
 
-        window.cppSide.UpdateData.connect(function(pressure, temperature, valve_status) {
-            v_togglevalve.status = valve_status;
+        window.cppSide.UpdateData.connect(function(pressure, temperature, state) {
+            v_valve.status = state;
             v_pressure.status = pressure;
             v_temperature.status = temperature;
         });
     });
 });
 
-var v_togglevalve = new Vue({
+var v_valve = new Vue({
   el: '#togglevalve',
   data: {
-    status: false
+    GASTANK_STATE_OPEN: GASTANK_STATE_OPEN,
+    GASTANK_STATE_CLOSED: GASTANK_STATE_CLOSED,
+    GASTANK_STATE_BROKEN: GASTANK_STATE_BROKEN,
+    status: 0
   },
   methods: {
         onToggleValve: function(){
-            this.status = !this.status;
+            if(this.status == GASTANK_STATE_OPEN)
+            {
+                this.status = GASTANK_STATE_CLOSED;
+            }
+            else if(this.status == GASTANK_STATE_CLOSED)
+            {
+                this.status = GASTANK_STATE_OPEN;
+            }
+            else
+            {
+                return;
+            }
 
-            cppSide.ChangeValveStatus(this.status, function(r){});
+            cppSide.ChangeValveStatus(this.status);
         }
     }
 })
