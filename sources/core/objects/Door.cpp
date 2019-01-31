@@ -30,11 +30,19 @@ Door::Door()
     SetState("door_closed");
 
     SetName("Door");
+
+    panel_open_ = false;
+    bolts_falled_ = false;
+}
+
+void Door::AfterWorldCreation()
+{
+    UpdateDoorOverlays();
 }
 
 void Door::Open()
 {
-    if (!IsState(State::CLOSED))
+    if (!IsState(State::CLOSED) || panel_open_ || bolts_falled_)
     {
         return;
     }
@@ -94,6 +102,15 @@ void Door::Process()
     }
 }
 
+void Door::ToggleBolts()
+{
+    if (panel_open_)
+    {
+        bolts_falled_ = !bolts_falled_;
+        UpdateDoorOverlays();
+    }
+}
+
 void Door::Bump(const Vector& vector, IdPtr<Movable> item)
 {
     if (IdPtr<Mob> mob = item)
@@ -115,16 +132,20 @@ void Door::Weld()
 
     if (IsState(State::WELDED))
     {
-        SetState("door_closed");
         door_state_ = State::CLOSED;
-        GetView().RemoveOverlays();
     }
     else
     {
-        GetView().AddOverlay("icons/Doorglass.dmi", "welded");
         door_state_ = State::WELDED;
     }
+    UpdateDoorOverlays();
     PlaySoundIfVisible("Welder.wav");
+}
+
+void Door::ToggleDoorPanel()
+{
+    panel_open_ = !panel_open_;
+    UpdateDoorOverlays();
 }
 
 void Door::AttackBy(IdPtr<Item> item)
@@ -134,6 +155,15 @@ void Door::AttackBy(IdPtr<Item> item)
         if ((IsState(State::CLOSED) || IsState(State::WELDED)) && welding_tool->IsWorking())
         {
             Weld();
+        }
+        return;
+    }
+    if (IdPtr<Screwdriver> screwdriver = item)
+    {
+        if (IsState(State::CLOSED))
+        {
+            PlaySoundIfVisible("Screwdriver.wav");
+            ToggleDoorPanel();
         }
         return;
     }
@@ -152,6 +182,23 @@ void Door::AttackBy(IdPtr<Item> item)
     {
         Open();
     }
+}
+
+void Door::UpdateDoorOverlays()
+{
+  GetView().RemoveOverlays();
+  if (bolts_falled_)
+  {
+      GetView().AddOverlay(GetView().GetBaseFrameset().GetSprite(), "door_locked");
+  }
+  if (IsState(State::WELDED))
+  {
+      GetView().AddOverlay(GetView().GetBaseFrameset().GetSprite(), "welded");
+  }
+  if (panel_open_)
+  {
+      GetView().AddOverlay(GetView().GetBaseFrameset().GetSprite(), "panel_open");
+  }
 }
 
 SecurityDoor::SecurityDoor()

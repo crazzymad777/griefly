@@ -6,15 +6,15 @@
     "typename": "GlassDoor",
     "variables": [
         {
+            "name": "transparent_",
+            "type": "bool"
+        },
+        {
+            "name": "name_",
+            "type": "string"
+        },
+        {
             "name": "passable_all_",
-            "type": "int32"
-        },
-        {
-            "name": "tick_speed_",
-            "type": "int32"
-        },
-        {
-            "name": "passable_level_",
             "type": "int32"
         },
         {
@@ -22,28 +22,36 @@
             "type": "int32"
         },
         {
-            "name": "direction_",
+            "name": "door_prefix_",
+            "type": "string"
+        },
+        {
+            "name": "door_state_",
             "type": "int32"
         },
         {
-            "name": "door_prefix_",
-            "type": "string"
+            "name": "passable_right_",
+            "type": "int32"
         },
         {
             "name": "last_tick_",
             "type": "int32"
         },
         {
-            "name": "name_",
-            "type": "string"
+            "name": "direction_",
+            "type": "int32"
         },
         {
             "name": "main_force_direction_",
             "type": "int32"
         },
         {
-            "name": "passable_right_",
+            "name": "passable_down_",
             "type": "int32"
+        },
+        {
+            "name": "anchored_",
+            "type": "bool"
         },
         {
             "name": "secondary_force_direction_",
@@ -58,28 +66,20 @@
             "type": "int32"
         },
         {
-            "name": "door_state_",
-            "type": "int32"
-        },
-        {
             "name": "v_level_",
             "type": "int32"
         },
         {
-            "name": "anchored_",
-            "type": "bool"
+            "name": "passable_level_",
+            "type": "int32"
         },
         {
-            "name": "passable_down_",
+            "name": "tick_speed_",
             "type": "int32"
         },
         {
             "name": "passable_up_",
             "type": "int32"
-        },
-        {
-            "name": "transparent_",
-            "type": "bool"
         },
         {
             "name": "passable_left_",

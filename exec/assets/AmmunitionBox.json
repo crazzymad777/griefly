@@ -6,27 +6,15 @@
     "typename": "AmmunitionBox",
     "variables": [
         {
+            "name": "transparent_",
+            "type": "bool"
+        },
+        {
             "name": "passable_all_",
             "type": "int32"
         },
         {
-            "name": "passable_level_",
-            "type": "int32"
-        },
-        {
-            "name": "last_move_",
-            "type": "int32"
-        },
-        {
-            "name": "direction_",
-            "type": "int32"
-        },
-        {
-            "name": "tick_speed_",
-            "type": "int32"
-        },
-        {
-            "name": "bullets_",
+            "name": "passable_right_",
             "type": "int32"
         },
         {
@@ -34,20 +22,40 @@
             "type": "int32"
         },
         {
+            "name": "name_",
+            "type": "string"
+        },
+        {
+            "name": "bullets_",
+            "type": "int32"
+        },
+        {
+            "name": "last_move_",
+            "type": "int32"
+        },
+        {
+            "name": "type_",
+            "type": "uint32"
+        },
+        {
             "name": "force_error_per_main_",
             "type": "int32"
         },
         {
-            "name": "name_",
-            "type": "string"
+            "name": "direction_",
+            "type": "int32"
         },
         {
             "name": "main_force_direction_",
             "type": "int32"
         },
         {
-            "name": "passable_right_",
+            "name": "passable_down_",
             "type": "int32"
+        },
+        {
+            "name": "anchored_",
+            "type": "bool"
         },
         {
             "name": "secondary_force_direction_",
@@ -62,24 +70,16 @@
             "type": "int32"
         },
         {
-            "name": "anchored_",
-            "type": "bool"
+            "name": "passable_level_",
+            "type": "int32"
         },
         {
-            "name": "passable_down_",
+            "name": "tick_speed_",
             "type": "int32"
         },
         {
             "name": "passable_up_",
             "type": "int32"
-        },
-        {
-            "name": "transparent_",
-            "type": "bool"
-        },
-        {
-            "name": "type_",
-            "type": "uint32"
         },
         {
             "name": "passable_left_",

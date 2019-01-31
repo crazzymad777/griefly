@@ -6,10 +6,6 @@
     "typename": "SpawnPoint",
     "variables": [
         {
-            "name": "name_",
-            "type": "string"
-        },
-        {
             "name": "passable_level_",
             "type": "int32"
         },
@@ -22,15 +18,11 @@
             "type": "int32"
         },
         {
+            "name": "name_",
+            "type": "string"
+        },
+        {
             "name": "passable_down_",
-            "type": "int32"
-        },
-        {
-            "name": "passable_left_",
-            "type": "int32"
-        },
-        {
-            "name": "passable_up_",
             "type": "int32"
         },
         {
@@ -40,6 +32,14 @@
         {
             "name": "spawn_type",
             "type": "string"
+        },
+        {
+            "name": "passable_up_",
+            "type": "int32"
+        },
+        {
+            "name": "passable_left_",
+            "type": "int32"
         },
         {
             "name": "passable_right_",
