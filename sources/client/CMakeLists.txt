@@ -3,7 +3,7 @@
 # Qt5 search
 #
 ###########################
-find_package(Qt5 ${MINIMUM_QT_VERSION} COMPONENTS Core Network Widgets OpenGL Multimedia REQUIRED)
+find_package(Qt5 ${MINIMUM_QT_VERSION} COMPONENTS Core Network Widgets OpenGL Multimedia WebEngine WebEngineWidgets REQUIRED)
 
 message(STATUS "Qt5 has been found: ${Qt5_VERSION}")
 
@@ -21,6 +21,12 @@ message(STATUS "OpenGL path: ${QtOpenGL_location}")
 
 get_target_property(QtMultimedia_location Qt5::Multimedia LOCATION)
 message(STATUS "Multimedia path: ${QtMultimedia_location}")
+
+get_target_property(QtCore_location Qt5::WebEngine LOCATION)
+message(STATUS "WebEngine path: ${QtWebEngine_location}")
+
+get_target_property(QtWebEngineWidgets_location Qt5::WebEngineWidgets LOCATION)
+message(STATUS "WebEngineWidgets path: ${QtWebEngineWidgets_location}")
 
 ########################################
 #
@@ -42,7 +48,7 @@ add_executable(KVClient WIN32 ${CLIENT_SOURCES} ${FORMS} ${FORMS_HEADERS})
 
 target_link_libraries(KVClient KVEngine)
 
-target_link_libraries(KVClient Qt5::Core Qt5::Network Qt5::Widgets Qt5::OpenGL Qt5::Multimedia)
+target_link_libraries(KVClient Qt5::Core Qt5::Network Qt5::Widgets Qt5::OpenGL Qt5::Multimedia Qt5::WebEngine Qt5::WebEngineWidgets)
 
 # Add opengl lib
 if(WIN32)
@@ -62,4 +68,3 @@ endif()
 
 install(TARGETS KVClient
         DESTINATION "${KV_INSTALL_PATH}")
-
